@@ -79,14 +79,14 @@ class App(QWidget):
         grid.addWidget(oneByAiButton, 1, 0)
         grid.addWidget(aiByAiButton, 1, 1)
 
-        oneByOneButton.clicked.connect(self.oneByOneGameStart)
-        oneByAiButton.clicked.connect(self.oneByAiGameStart)
-        aiByAiButton.clicked.connect(self.aiByAiGameStart)
+        oneByOneButton.clicked.connect(self.__oneByOneGameStart)
+        oneByAiButton.clicked.connect(self.__oneByAiGameStart)
+        aiByAiButton.clicked.connect(self.__aiByAiGameStart)
 
         resetButton = QPushButton("재시작")
         quitButton = QPushButton("종료")
 
-        resetButton.clicked.connect(self.reset)
+        resetButton.clicked.connect(self.__reset)
         quitButton.clicked.connect(QCoreApplication.instance().quit)
 
         grid.addWidget(resetButton, 2, 0)
@@ -111,6 +111,7 @@ class App(QWidget):
 
     def mouseDoubleClickEvent(self, event):
         if not self.status:
+            QMessageBox.warning(self, "게임 입장 오류", "게임 모드를 선택해주세요")
             return
 
         if not(event.buttons() & Qt.LeftButton):
@@ -141,6 +142,7 @@ class App(QWidget):
         self.updateView(imageX, imageY)
 
         if result:
+            QMessageBox.about(self, "게임 종료", "{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", x, y))
             text = QListWidgetItem("{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", x, y))
             self.playList.addItem(text)
             print('{0}: {1}'.format(color, result))
@@ -152,17 +154,18 @@ class App(QWidget):
         self.modified = True
         self.update()
 
-    def reset(self):
+    def __reset(self):
         print("resetting..")
         self.__initWidget()
 
-    def oneByOneGameStart(self):
+    def __oneByOneGameStart(self):
         print('one vs one')
         self.status = True
 
-    def oneByAiGameStart(self):
+    def __oneByAiGameStart(self):
         print("one vs ai")
 
-    def aiByAiGameStart(self):
+    def __aiByAiGameStart(self):
         print("ai vs ai")
+
         

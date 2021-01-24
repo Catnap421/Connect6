@@ -23,7 +23,7 @@ class GameStatus():
                         return (color, True)
                 except IndexError:
                     continue
-        print('아직')
+
         return (color, False)
                 
     def checkBoard(self, posX, posY, color):
