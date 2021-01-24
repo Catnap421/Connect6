@@ -153,6 +153,7 @@ class App(QWidget):
         if result:
             QMessageBox.about(self, "게임 종료", "{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", x, y))
             text = QListWidgetItem("{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", x, y))
+            self.statusView.setText("{0} 승리".format("BLACK" if color is 1 else "WHITE"))
             self.playList.addItem(text)
             self.status = False
             self.resetButton.setEnabled(True)
