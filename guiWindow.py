@@ -27,9 +27,6 @@ class App(QWidget):
         self.gameStatus = GameStatus()
         self.status = False # False: 시작 불가 True: 시작 가능
 
-        # Set Converter
-        self.coordinateConverter = CoordinateConverter()
-
         # Declare Layout Variables
         hbox = QHBoxLayout()
         vbox = QVBoxLayout()
@@ -70,25 +67,26 @@ class App(QWidget):
         vbox.addStretch(1)
 
         # Set Buttons
-        oneByOneButton = QPushButton('1 vs 1(테스트)')
-        oneByAiButton = QPushButton('1 vs AI')
-        aiByAiButton = QPushButton('AI vs AI')
+        self.oneByOneButton = QPushButton('1 vs 1(테스트)')
+        self.oneByAiButton = QPushButton('1 vs AI')
+        self.aiByAiButton = QPushButton('AI vs AI')
 
-        grid.addWidget(oneByOneButton, 0, 0)
-        grid.addWidget(oneByAiButton, 1, 0)
-        grid.addWidget(aiByAiButton, 1, 1)
+        grid.addWidget(self.oneByOneButton, 0, 0)
+        grid.addWidget(self.oneByAiButton, 1, 0)
+        grid.addWidget(self.aiByAiButton, 1, 1)
 
-        oneByOneButton.clicked.connect(self.__oneByOneGameStart)
-        oneByAiButton.clicked.connect(self.__oneByAiGameStart)
-        aiByAiButton.clicked.connect(self.__aiByAiGameStart)
+        self.oneByOneButton.clicked.connect(self.__oneByOneGameStart)
+        self.oneByAiButton.clicked.connect(self.__oneByAiGameStart)
+        self.aiByAiButton.clicked.connect(self.__aiByAiGameStart)
 
-        resetButton = QPushButton("재시작")
+        self.resetButton = QPushButton("재시작")
         quitButton = QPushButton("종료")
 
-        resetButton.clicked.connect(self.__reset)
+        self.resetButton.clicked.connect(self.__reset)
         quitButton.clicked.connect(QCoreApplication.instance().quit)
 
-        grid.addWidget(resetButton, 2, 0)
+        grid.addWidget(self.resetButton, 2, 0)
+        self.resetButton.setEnabled(False)
         grid.addWidget(quitButton, 2, 1)
 
         # Set Layout
@@ -96,6 +94,7 @@ class App(QWidget):
         vbox.addStretch(3)
         hbox.addLayout(vbox)
         hbox.addStretch(1)
+
         self.setLayout(hbox)
 
     def paintEvent(self, event):
@@ -126,7 +125,7 @@ class App(QWidget):
             return
         
         # Converter 호출하기
-        x,y = (self.coordinateConverter.ConvertImageToBoard(x, y))
+        x,y = CoordinateConverter.ConvertImageToBoard(x, y)
 
         # GameStatus 호출하기
         imageX, imageY = self.gameStatus.checkBoard(x, y, self.gameStatus.getTurn())
@@ -141,12 +140,13 @@ class App(QWidget):
   
         self.updateView(imageX, imageY)
 
-        ## Check Result
+        ## Check Result(승리 확인)
         if result:
             QMessageBox.about(self, "게임 종료", "{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", x, y))
             text = QListWidgetItem("{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", x, y))
             self.playList.addItem(text)
             self.status = False
+            self.resetButton.setEnabled(True)
             return
 
     def updateView(self, posX, posY):
@@ -156,10 +156,29 @@ class App(QWidget):
 
     def __reset(self):
         print("resetting..")
-        self.__initWidget()
+        self.pixmap = QPixmap(background_path)
+        self.pixmap = self.pixmap.scaledToHeight(578)
+        self.background.setPixmap(self.pixmap)
+
+        self.modified = False
+        self.groundX = 0
+        self.groundY = 0
+        self.gameStatus = GameStatus()
+        self.status = False # False: 시작 불가 True: 시작 가능
+
+        self.playList.clear()
+
+        self.oneByOneButton.setEnabled(True)
+        self.oneByAiButton.setEnabled(True)
+        self.aiByAiButton.setEnabled(True)
+        self.resetButton.setEnabled(False)
 
     def __oneByOneGameStart(self):
         print('one vs one')
+        self.oneByOneButton.setEnabled(False)
+        self.oneByAiButton.setEnabled(False)
+        self.aiByAiButton.setEnabled(False)
+        self.resetButton.setEnabled(False)
         self.status = True
 
     def __oneByAiGameStart(self):
