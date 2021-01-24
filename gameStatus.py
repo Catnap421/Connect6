@@ -31,7 +31,6 @@ class GameStatus():
     def checkBoard(self, posX, posY, color):
         if self.board[posY][posX] is not 0:
             return (-1, -1)
-
         self.board[posY][posX] = color
         
         return (self.__posX[posX] - 23, self.__posY[posY] - 50)

@@ -114,7 +114,7 @@ class App(QWidget):
         self.modified = False
 
         self.gameStatus.setTurn()
-        self.statusView.setText("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE")
+        self.statusView.setText("TURN : {}".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE"))
 
 
     def mouseDoubleClickEvent(self, event):
@@ -153,7 +153,7 @@ class App(QWidget):
         if result:
             QMessageBox.about(self, "게임 종료", "{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", x, y))
             text = QListWidgetItem("{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", x, y))
-            self.statusView.setText("{0} 승리".format("BLACK" if color is 1 else "WHITE"))
+            self.statusView.setText("WINNER : {0}".format("BLACK" if color is 1 else "WHITE"))
             self.playList.addItem(text)
             self.status = False
             self.resetButton.setEnabled(True)
@@ -194,7 +194,7 @@ class App(QWidget):
         self.resetButton.setEnabled(False)
         self.status = True
 
-        self.statusView.setText("BLACK")
+        self.statusView.setText("TURN : {}".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE"))
 
     def __oneByAiGameStart(self):
         print("one vs ai")
