@@ -49,7 +49,14 @@ class App(QWidget):
         self.setMouseTracking(True)
 
         # Set StatusView
-        self.statusView = QListWidget(self)
+        self.statusView = QLabel('READY')
+        self.statusView.setStyleSheet("color: black;"
+                      "background-color: #d5f4e6;"
+                      "font-weight: 700;"
+                      "border-style: solid;"
+                      "border-width: 2px;"
+                      "border-color: black;"
+                      "border-radius: 5px")
 
         # Set Timer Display
         self.lcd = QLCDNumber()
@@ -107,6 +114,8 @@ class App(QWidget):
         self.modified = False
 
         self.gameStatus.setTurn()
+        self.statusView.setText("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE")
+
 
     def mouseDoubleClickEvent(self, event):
         if not self.status:
@@ -173,6 +182,9 @@ class App(QWidget):
         self.aiByAiButton.setEnabled(True)
         self.resetButton.setEnabled(False)
 
+        self.statusView.setText("READY")
+
+
     def __oneByOneGameStart(self):
         print('one vs one')
         self.oneByOneButton.setEnabled(False)
@@ -180,6 +192,8 @@ class App(QWidget):
         self.aiByAiButton.setEnabled(False)
         self.resetButton.setEnabled(False)
         self.status = True
+
+        self.statusView.setText("BLACK")
 
     def __oneByAiGameStart(self):
         print("one vs ai")
