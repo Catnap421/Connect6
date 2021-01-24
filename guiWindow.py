@@ -21,7 +21,6 @@ class App(QWidget):
 
     def __initWidget(self):
         # Set Ground
-        self.turn = 1 # 1 : black 2: white
         self.modified = False
         self.groundX = 0
         self.groundY = 0
@@ -104,10 +103,11 @@ class App(QWidget):
             return
 
         painter = QPainter(self.pixmap)
-        painter.drawImage(self.groundX, self.groundY, self.black if self.turn is 1 else self.white)
+        painter.drawImage(self.groundX, self.groundY, self.black if self.gameStatus.getTurn() is 1 else self.white)
         self.background.setPixmap(self.pixmap)
         self.modified = False
-        self.turn = 3 - self.turn
+
+        self.gameStatus.setTurn()
 
     def mouseDoubleClickEvent(self, event):
         if not self.status:
@@ -129,23 +129,23 @@ class App(QWidget):
         x,y = (self.coordinateConverter.ConvertImageToBoard(x, y))
 
         # GameStatus 호출하기
-        imageX, imageY = self.gameStatus.checkBoard(x, y, self.turn)
-        color, result = self.gameStatus.isConnect6(self.turn)
+        imageX, imageY = self.gameStatus.checkBoard(x, y, self.gameStatus.getTurn())
+        color, result = self.gameStatus.isConnect6(self.gameStatus.getTurn())
 
         if imageX is -1:
             print('이미 놓았습니다')
             return
 
-        text = QListWidgetItem("{0}: ({1}, {2})에 돌을 놓았습니다. ".format("BLACK" if self.turn is 1 else "WHITE", x, y))
+        text = QListWidgetItem("{0}: ({1}, {2})에 돌을 놓았습니다. ".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE", x, y))
         self.playList.addItem(text)
   
         self.updateView(imageX, imageY)
 
+        ## Check Result
         if result:
             QMessageBox.about(self, "게임 종료", "{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", x, y))
             text = QListWidgetItem("{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", x, y))
             self.playList.addItem(text)
-            print('{0}: {1}'.format(color, result))
             self.status = False
             return
 
