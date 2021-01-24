@@ -129,7 +129,8 @@ class App(QWidget):
 
         # GameStatus 호출하기
         imageX, imageY = self.gameStatus.checkBoard(x, y, self.turn)
-        
+        color, result = self.gameStatus.isConnect6(self.turn)
+
         if imageX is -1:
             print('이미 놓았습니다')
             return
@@ -138,6 +139,13 @@ class App(QWidget):
         self.playList.addItem(text)
   
         self.updateView(imageX, imageY)
+
+        if result:
+            text = QListWidgetItem("{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", x, y))
+            self.playList.addItem(text)
+            print('{0}: {1}'.format(color, result))
+            self.status = False
+            return
 
     def updateView(self, posX, posY):
         self.groundX, self.groundY = posX, posY
