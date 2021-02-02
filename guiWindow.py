@@ -4,10 +4,18 @@ from PyQt5.QtCore import *
 from coordinateConverter import *
 from gameStatus import *
 from color import *
+from adapter import *
+import time
 
 black_path = "./images/black.png"
 white_path = "./images/white.png"
 background_path = './images/baduk_19.png'
+
+class QUserEvent(QEvent):
+    def __init__(self, x, y):
+        super().__init__(QEvent.User)
+        self.x = x
+        self.y = y
 
 class App(QWidget):
 
@@ -113,6 +121,12 @@ class App(QWidget):
         x = event.x()
         y = event.y() 
 
+        if self.status == "oneByOne":
+            self.__playOneByOne(x, y)
+        elif self.status == "oneByAi":
+            self.__playOneByAi(x, y)
+
+    def __playOneByOne(self, x, y):
         # 기준 28 <= x <= 570, 53 <= y <= 595
         if 27 > x or x > 571 or y < 52 or y > 596:
             return
@@ -144,7 +158,38 @@ class App(QWidget):
         self.playList.addItem(text)
         self.status = False
         self.resetButton.setEnabled(True)
-              
+
+    def __playOneByAi(self, x, y):
+        print("playOneByAi")
+        # 내 차례면 돌을 둘 수 있게 하고,
+        # 돌을 두게 되면, (adapter) -> calculator로 전달
+        # 어디에서 메시지를 보내는 게 맞을까? adapter
+        if self.gameStatus.getTurn() != 1: #흑
+            QMessageBox.warning(self, "차례Error", "아직 당신의 차례가 아닙니다.")
+            return
+        
+        x,y = CoordinateConverter.ConvertImageToBoard(x, y)
+
+        # GameStatus 호출하기
+        imageX, imageY = self.gameStatus.checkBoard(x, y, self.gameStatus.getTurn())
+        color, result = self.gameStatus.isConnect6(self.gameStatus.getTurn())
+
+        if imageX is -1:
+            print('이미 놓았습니다')
+            return
+
+        text = QListWidgetItem("{0}: ({1}, {2})에 돌을 놓았습니다. ".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE", x, y))
+        self.playList.addItem(text)
+  
+        self.updateStatus(imageX, imageY) # 여기서 차례를 바꿔줌
+        QApplication.postEvent(self, QUserEvent(x, y), Qt.LowEventPriority - 1)
+        
+
+    def customEvent(self, event):
+        print(event.x, event.y)
+        #self.adapter.sendLocalAi(x,y)
+        print("behavior")
+
     def paintEvent(self, event):
         if not self.modified:
             return
@@ -154,8 +199,10 @@ class App(QWidget):
         self.background.setPixmap(self.pixmap)
         self.modified = False
 
+        print("painte")
         self.gameStatus.setTurn()
         self.statusView.setText("TURN : {}".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE"))
+
 
     def updateStatus(self, posX, posY):
         self.groundX, self.groundY = posX, posY
@@ -189,7 +236,7 @@ class App(QWidget):
         self.oneByAiButton.setEnabled(False)
         self.aiByAiButton.setEnabled(False)
         self.resetButton.setEnabled(False)
-        self.status = True
+        self.status = 'oneByOne'
 
         self.statusView.setText("TURN : {}".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE"))
 
@@ -199,9 +246,11 @@ class App(QWidget):
         self.oneByAiButton.setEnabled(False)
         self.aiByAiButton.setEnabled(False)
         self.resetButton.setEnabled(False)
-        self.status = True
+        self.status = 'oneByAi'
 
         self.statusView.setText("TURN : {}".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE"))
+        self.adapter = Adapter(2, self.gameStatus)
+
     def __aiByAiGameStart(self):
         print("ai vs ai")
 

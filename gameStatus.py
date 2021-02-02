@@ -1,7 +1,7 @@
 from coordinateConverter import *
 
 class GameStatus():
-        # Class constants
+    # Class constants
     INF = float("inf")  # infinity
     NEG_INF = - float("inf")  # -infinity
 

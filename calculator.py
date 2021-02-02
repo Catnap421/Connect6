@@ -1,31 +1,3 @@
-# AI 코드 작성
-"""
-의사 코드
-
-<미니맥스>
-
-
-
-<알파 베타>
-
-function alphabeta(node, depth, α, β, maximizingPlayer)
-    if depth = 0 or node is a terminal node
-        return the heuristic value of node
-    if maximizingPlayer
-        for each child of node
-            α := max(α, alphabeta(child, depth - 1, α, β, FALSE))
-            if β ≤ α
-                break (* β cut-off *)
-        return α
-    else
-        for each child of node
-            β := min(β, alphabeta(child, depth - 1, α, β, TRUE))
-            if β ≤ α
-                break (* α cut-off *)
-        return β
-
-"""
-""" 6개로 슬라이딩 윈도우 처럼 확인해서 4개 혹은 5개면 필히 두어야함"""
 class Calculator():
     def __init__(self, color):
         self.weightBoard = [[0 for col in range(19)] for row in range(19)]
@@ -37,7 +9,7 @@ class Calculator():
 
         for y in range(19):
             for x in range(19):
-                weight = weightBoard[y][x]
+                weight = self.weightBoard[y][x]
 
                 if weight > maxWeight :
                     maxWeight = weight
@@ -46,26 +18,9 @@ class Calculator():
                     nextPos.append([x, y])
 
         return nextPos
-    
-    # def minimax(self, node, depth, color):
-    #     # bestValue = [x, y, value]\
-    #     if depth == 0:
-    #         return (x, y, value)
-    #     if maximizingPlayer
-    #         bestValue := -∞
-    #         for each child of node
-    #             val := minimax(child, depth - 1, FALSE))
-    #             bestValue := max(bestValue, val);
-    #         return bestValue
-    #     else
-    #         bestValue := +∞
-    #         for each child of node
-    #             val := minimax(child, depth - 1, TRUE))
-    #             bestValue := min(bestValue, val);
-    #         return bestValue
 
     # 슬라이딩 윈도우처럼 6개의 윈도우 안에 몇 개의 돌이 있냐에 따라 가중치를 계산하자
-    def initWeightBoard(self, board, pos):
+    def initWeightBoard(self, pos, board):
         # 여기서 돌아야 할 예상 후보군을 먼저 선정 
         # pos : (x, y) 상대가 둔 돌의 위치
         posX = pos[0]
@@ -81,19 +36,19 @@ class Calculator():
                     self.weightBoard[y][x] = 1
 
 
-    def calculateWeight(self, depth, color, remain, board):
-        nextPos = self.calculateNextPos()
-        
+    def calculateWeight(self, nextPos, depth, color, remain, board):        
         for pos in nextPos:
             x = pos[0]
             y = pos[1]
             weight = 0
-            weight += slideHorizontally(x, y, 6, color, remain, board)
-            weight += slideVertically(x, y, 6, color, remain, board)
-            weight += slideDiagonally1(x, y, 6, color, remain, board)
-            weight += slideDiagonally2(x, y, 6, color, remain, board)
+            weight += self.slideHorizontally(x, y, 6, color, remain, board)
+            weight += self.slideVertically(x, y, 6, color, remain, board)
+            weight += self.slideDiagonally1(x, y, 6, color, remain, board)
+            weight += self.slideDiagonally2(x, y, 6, color, remain, board)
 
-            weightBoard[y][x] = weight
+            self.weightBoard[y][x] = weight
+
+            print(self.weightBoard)
         return weight
 
     def slideHorizontally(self, x, y, n, color, remain, board):
@@ -112,7 +67,7 @@ class Calculator():
             window.append(board[y][minX + i])
 
         countN = {
-            "count6" : 0
+            "count6" : 0,
             "count5" : 0,
             "count4" : 0,
             "count3" : 0,
@@ -158,7 +113,7 @@ class Calculator():
             window.append(board[minY + i][x])
 
         countN = {
-            "count6" : 0
+            "count6" : 0,
             "count5" : 0,
             "count4" : 0,
             "count3" : 0,
@@ -206,7 +161,7 @@ class Calculator():
             window.append(board[minY + i][minX + i])
 
         countN = {
-            "count6" : 0
+            "count6" : 0,
             "count5" : 0,
             "count4" : 0,
             "count3" : 0,
@@ -257,7 +212,7 @@ class Calculator():
             window.append(board[minY + i][maxX - i])
 
         countN = {
-            "count6" : 0
+            "count6" : 0,
             "count5" : 0,
             "count4" : 0,
             "count3" : 0,
@@ -296,3 +251,21 @@ class Calculator():
         window = []
 
         return window
+
+        
+    # def minimax(self, node, depth, color):
+    #     # bestValue = [x, y, value]\
+    #     if depth == 0:
+    #         return (x, y, value)
+    #     if maximizingPlayer
+    #         bestValue := -∞
+    #         for each child of node
+    #             val := minimax(child, depth - 1, FALSE))
+    #             bestValue := max(bestValue, val);
+    #         return bestValue
+    #     else
+    #         bestValue := +∞
+    #         for each child of node
+    #             val := minimax(child, depth - 1, TRUE))
+    #             bestValue := min(bestValue, val);
+    #         return bestValue
