@@ -1,10 +1,13 @@
+from coordinateConverter import *
+
 class GameStatus():
+        # Class constants
+    INF = float("inf")  # infinity
+    NEG_INF = - float("inf")  # -infinity
+
     def __init__(self):
         self.board = [[0 for col in range(19)] for row in range(19)]
-        self.__posX = [28, 59, 90, 120, 150, 180, 210, 240, 270, 300, 330, 360, 390, 420, 450, 480, 510, 540, 570]
-        self.__posY = [53, 84, 115, 145, 175, 205, 235, 265, 295, 325, 355, 385, 415, 445, 475, 505, 535, 565, 695]  
         self.turn = [1, 1] # 1 : black 2: white
-
 
     def isConnect6(self, color):
         board = self.board
@@ -28,13 +31,14 @@ class GameStatus():
 
         return (color, False)
                 
-    def checkBoard(self, posX, posY, color):
-        if self.board[posY][posX] is not 0:
+    def checkBoard(self, boardPosX, boardPosY, color):
+        if self.board[boardPosY][boardPosX] is not 0:
             return (-1, -1)
-        self.board[posY][posX] = color
-        
-        return (self.__posX[posX] - 23, self.__posY[posY] - 50)
+        self.board[boardPosY][boardPosX] = color
 
+        return CoordinateConverter.ConvertBoardToImage(boardPosX, boardPosY)
+
+    # def 두 개의 돌을 놓았는 지
     def setTurn(self):
         self.turn[1] += 1
         if self.turn[1] == 2:
@@ -43,4 +47,4 @@ class GameStatus():
     def getTurn(self):
         return self.turn[0]
 
-    # def 두 개의 돌을 놓았는 지
+  
