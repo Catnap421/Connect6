@@ -7,7 +7,9 @@ class GameStatus():
 
     def __init__(self):
         self.board = [[0 for col in range(19)] for row in range(19)]
+        self.pointBoard = [[0 for col in range(19)] for row in range(19)]
         self.turn = [1, 1] # 1 : black 2: white
+        self.count = 0
 
     def isConnect6(self, color):
         board = self.board
@@ -30,13 +32,32 @@ class GameStatus():
                     continue
 
         return (color, False)
-                
-    def checkBoard(self, boardPosX, boardPosY, color):
-        if self.board[boardPosY][boardPosX] is not 0:
-            return (-1, -1)
-        self.board[boardPosY][boardPosX] = color
 
-        return CoordinateConverter.ConvertBoardToImage(boardPosX, boardPosY)
+    def isExist(self, boardX, boardY):
+        return True if self.board[boardY][boardX] == 0 else False
+
+    def checkBoard(self, boardX, boardY, color):
+        if not self.isExist(boardX, boardY):
+            return [None, None]
+
+        self.count += 1
+        self.board[boardY][boardX] = color
+
+        self.pointBoard[boardY][boardX] = 0
+
+        idx = 1
+        if self.count > 16:
+            idx = 2
+            
+        for y in range(boardY - idx, boardY + idx + 1):
+            for x in range(boardX - idx, boardX + idx + 1):
+                try: 
+                    if self.board[y][x] == 0:
+                        self.pointBoard[y][x] = 1
+                except IndexError:
+                    continue
+
+        return CoordinateConverter.ConvertBoardToImage(boardX, boardY)
 
     # def 두 개의 돌을 놓았는 지
     def setTurn(self):

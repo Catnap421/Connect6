@@ -6,10 +6,15 @@ from gameStatus import *
 from color import *
 from adapter import *
 import time
+import threading
+import logging
 
 black_path = "./images/black.png"
 white_path = "./images/white.png"
 background_path = './images/baduk_19.png'
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 class QUserEvent(QEvent):
     def __init__(self, x, y):
@@ -44,7 +49,7 @@ class App(QWidget):
         self.groundX = 0
         self.groundY = 0
         self.gameStatus = GameStatus()
-        self.status = False # False: 시작 불가 True: 시작 가능
+        self.status = None # None: 시작 불가 True: 시작 가능
 
         # Set Background
         self.pixmap = QPixmap(background_path)
@@ -110,7 +115,7 @@ class App(QWidget):
         self.setLayout(hbox)
 
     def mouseDoubleClickEvent(self, event):
-        if not self.status:
+        if self.status is None:
             QMessageBox.warning(self, "게임 입장 오류", "게임 모드를 선택해주세요")
             return
 
@@ -130,65 +135,29 @@ class App(QWidget):
         # 기준 28 <= x <= 570, 53 <= y <= 595
         if 27 > x or x > 571 or y < 52 or y > 596:
             return
-        
-        ## player mode
-        # Converter 호출하기
-        x,y = CoordinateConverter.ConvertImageToBoard(x, y)
 
-        # GameStatus 호출하기
-        imageX, imageY = self.gameStatus.checkBoard(x, y, self.gameStatus.getTurn())
-        color, result = self.gameStatus.isConnect6(self.gameStatus.getTurn())
+        boardX, boardY = CoordinateConverter.ConvertImageToBoard(x, y)
+        self.updateStatus(boardX, boardY)
 
-        if imageX is -1:
-            print('이미 놓았습니다')
-            return
-
-        text = QListWidgetItem("{0}: ({1}, {2})에 돌을 놓았습니다. ".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE", x, y))
-        self.playList.addItem(text)
-  
-        self.updateStatus(imageX, imageY)
-
-        ## Check Result(결과가 나왔는 지)
-        if not result:
-            return
-
-        QMessageBox.about(self, "게임 종료", "{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", x, y))
-        text = QListWidgetItem("{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", x, y))
-        self.statusView.setText("WINNER : {0}".format("BLACK" if color is 1 else "WHITE"))
-        self.playList.addItem(text)
-        self.status = False
-        self.resetButton.setEnabled(True)
-
-    def __playOneByAi(self, x, y):
-        print("playOneByAi")
+    def __playOneByAi(self, oneX, oneY):
         # 내 차례면 돌을 둘 수 있게 하고,
         # 돌을 두게 되면, (adapter) -> calculator로 전달
         # 어디에서 메시지를 보내는 게 맞을까? adapter
+
         if self.gameStatus.getTurn() != 1: #흑
             QMessageBox.warning(self, "차례Error", "아직 당신의 차례가 아닙니다.")
             return
         
-        x,y = CoordinateConverter.ConvertImageToBoard(x, y)
-
-        # GameStatus 호출하기
-        imageX, imageY = self.gameStatus.checkBoard(x, y, self.gameStatus.getTurn())
-        color, result = self.gameStatus.isConnect6(self.gameStatus.getTurn())
-
-        if imageX is -1:
-            print('이미 놓았습니다')
-            return
-
-        text = QListWidgetItem("{0}: ({1}, {2})에 돌을 놓았습니다. ".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE", x, y))
-        self.playList.addItem(text)
+        boardX, boardY = CoordinateConverter.ConvertImageToBoard(oneX, oneY)
   
-        self.updateStatus(imageX, imageY) # 여기서 차례를 바꿔줌
-        QApplication.postEvent(self, QUserEvent(x, y), Qt.LowEventPriority - 1)
+        self.updateStatus(boardX, boardY) # 여기서 차례를 바꿔줌
+        QApplication.postEvent(self, QUserEvent(boardX, boardY), Qt.LowEventPriority - 1)
         
-
     def customEvent(self, event):
-        print(event.x, event.y)
-        #self.adapter.sendLocalAi(x,y)
-        print("behavior")
+        logger.info('custom event!')
+        if self.gameStatus.getTurn() == 2:
+            logger.info('adapter is calculate')
+            self.adapter.isCalculate = True
 
     def paintEvent(self, event):
         if not self.modified:
@@ -198,16 +167,37 @@ class App(QWidget):
         painter.drawImage(self.groundX, self.groundY, self.black if self.gameStatus.getTurn() is 1 else self.white)
         self.background.setPixmap(self.pixmap)
         self.modified = False
-
-        print("painte")
         self.gameStatus.setTurn()
         self.statusView.setText("TURN : {}".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE"))
+        logger.info("paint event: ", self.gameStatus.getTurn())
 
+    def updateStatus(self, boardX, boardY):
+        # GameStatus 호출하기
+        imageX, imageY = self.gameStatus.checkBoard(boardX, boardY, self.gameStatus.getTurn())
+        color, result = self.gameStatus.isConnect6(self.gameStatus.getTurn())
 
-    def updateStatus(self, posX, posY):
-        self.groundX, self.groundY = posX, posY
+        if imageX is None:
+            print('이미 놓았습니다')
+            return
+  
+        text = QListWidgetItem("{0}: ({1}, {2})에 돌을 놓았습니다. ".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE", boardX, boardY))
+        self.playList.addItem(text)
+        self.groundX, self.groundY = imageX, imageY
         self.modified = True
         self.update()
+
+        ## Check Result(결과가 나왔는 지)
+        if not result:
+            return
+
+        QMessageBox.about(self, "게임 종료", "{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", boardX, boardY))
+        text = QListWidgetItem("{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", boardX, boardY))
+        self.statusView.setText("WINNER : {0}".format("BLACK" if color is 1 else "WHITE"))
+        self.playList.addItem(text)
+        self.status = False
+        self.resetButton.setEnabled(True)
+        if self.th : 
+            self.th.stop()
 
     def __reset(self):
         print("resetting..")
@@ -249,7 +239,14 @@ class App(QWidget):
         self.status = 'oneByAi'
 
         self.statusView.setText("TURN : {}".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE"))
-        self.adapter = Adapter(2, self.gameStatus)
+        aiColor = 2
+
+        # Setting Thread - self.adapter로 멤버변수로 만드는 게 맞을까?
+        self.adapter = Adapter(aiColor, self.gameStatus, False)
+        self.th = self.adapter
+        self.th.drawImage.connect(self.updateStatus)
+        self.th.start()
+
 
     def __aiByAiGameStart(self):
         print("ai vs ai")
