@@ -66,21 +66,3 @@ class Adapter(QThread):
         self.drawImage.emit(pos1, pos2)
 
     # def sendServer():
-    #  self.calculator.initWeightBoard([x, y], self.gameStatus.board)
-
-    #     if self.gameStatus.getTurn() == 2:
-    #         print("ai turn")
-    #         nextPos = self.calculator.calculateNextPos()
-    #         print(nextPos)
-    #         self.calculator.calculateWeight(nextPos, 1, 2, 2, self.gameStatus.board)
-    #         result = self.calculator.calculateNextPosByWeight()
-
-    #         if result == []:
-    #             nextPos = self.randomPick()
-    #         else:
-    #             nextPos = result[0]
-            
-    #         self.calculator.initWeightBoard(nextPos, self.gameStatus.board)   
-
-    #     print("nextPos :", nextPos)
-    #     self.turnCount += 1

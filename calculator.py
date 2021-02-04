@@ -23,14 +23,14 @@ class Calculator():
         self.gameStatus = gameStatus
 
     def run(self, remain):
-        nextPointPos = self.calculateNextPosbyPoint()
-        self.calculateWeightBoard(nextPointPos, self.color, remain, self.gameStatus.board)
-        nextPos = self.calculateNextPosByWeight(nextPointPos)
+        nextPointPos = self.__calculateNextPosbyPoint()
+        self.__calculateWeightBoard(nextPointPos, self.color, remain, self.gameStatus.board)
+        nextPos = self.__calculateNextPosByWeight(nextPointPos)
         x,y = nextPos[random.randrange(len(nextPos))]
         print("by Weight:", x, y)
         return x, y
 
-    def calculateNextPosbyPoint(self):
+    def __calculateNextPosbyPoint(self):
         nextPos = []
         maxWeight = 1
 
@@ -42,7 +42,7 @@ class Calculator():
 
         return nextPos
 
-    def calculateNextPosByWeight(self, nextPointPos):
+    def __calculateNextPosByWeight(self, nextPointPos):
         nextPos = []
         maxWeight = 1
 
@@ -59,7 +59,7 @@ class Calculator():
             nextPos = [nextPointPos[random.randrange(len(nextPointPos))]]
         return nextPos
 
-    def calculateWeightBoard(self, nextPos, color, remain, board):   
+    def __calculateWeightBoard(self, nextPos, color, remain, board):   
         self.weightBoard = [[0 for col in range(19)] for row in range(19)] 
 
         for pos in nextPos:
@@ -69,23 +69,23 @@ class Calculator():
             tempBoard = copy.deepcopy(board)
             tempBoard[y][x] = 3 - color
             logger.info(f'{x}, {y}')
-            weight += self.slideHorizontally(x, y, 6, 3 - color, remain, tempBoard)
-            weight += self.slideVertically(x, y, 6, 3 - color, remain, tempBoard)
-            weight += self.slideDiagonally1(x, y, 6, 3 - color, remain, tempBoard)
-            weight += self.slideDiagonally2(x, y, 6, 3 - color, remain, tempBoard)
+            weight += self.__slideHorizontally(x, y, 6, 3 - color, remain, tempBoard)
+            weight += self.__slideVertically(x, y, 6, 3 - color, remain, tempBoard)
+            weight += self.__slideDiagonally1(x, y, 6, 3 - color, remain, tempBoard)
+            weight += self.__slideDiagonally2(x, y, 6, 3 - color, remain, tempBoard)
 
             tempBoard[y][x] = color
-            weight += self.slideHorizontally(x, y, 6, color, remain, tempBoard)
-            weight += self.slideVertically(x, y, 6, color, remain, tempBoard)
-            weight += self.slideDiagonally1(x, y, 6, color, remain, tempBoard)
-            weight += self.slideDiagonally2(x, y, 6, color, remain, tempBoard)
+            weight += self.__slideHorizontally(x, y, 6, color, remain, tempBoard)
+            weight += self.__slideVertically(x, y, 6, color, remain, tempBoard)
+            weight += self.__slideDiagonally1(x, y, 6, color, remain, tempBoard)
+            weight += self.__slideDiagonally2(x, y, 6, color, remain, tempBoard)
 
             self.weightBoard[y][x] = weight
 
         #pprint.pprint(self.weightBoard)
         return 
 
-    def calculateWeight(self, color, remain, countN):
+    def __calculateWeight(self, color, remain, countN):
         """
         1. 내 돌이 6개가 되는 경우(6) : 1000000
         2. 상대가 6개가 완성 되는 경우(5, 6) : 400000
@@ -112,12 +112,9 @@ class Calculator():
 
         return weight
         
-    def slideHorizontally(self, x, y, n, color, remain, board):
-        # n : window size
+    def __slideHorizontally(self, x, y, n, color, remain, board):
         minX, maxX = max(0, x - 5), min(18, x + 5)
-
-        space = 0 # 그 사이에 빈 칸이 있냐 없냐에 따라 가중치를 다르게 (1 이나 2이냐는 남은 기회에 따라 중요도가 달라짐)
-
+        space = 0 
         window = []
 
         countN = {
@@ -125,16 +122,13 @@ class Calculator():
         }
 
         for x in range(minX, maxX + 1):
-            self.calculateCount(window, countN, n, board[y][x], color)
+            self.__calculateCount(window, countN, n, board[y][x], color)
 
-        return self.calculateWeight(color, remain, countN)
+        return self.__calculateWeight(color, remain, countN)
 
-    def slideVertically(self, x, y, n, color, remain, board):
+    def __slideVertically(self, x, y, n, color, remain, board):
         minY, maxY = max(0, y - 5), min(18, y + 5)
-
-
         space = 0 
-
         window = []
 
         countN = {
@@ -142,11 +136,11 @@ class Calculator():
         }
 
         for y in range(minY, maxY + 1):
-            self.calculateCount(window, countN, n, board[y][x], color)
+            self.__calculateCount(window, countN, n, board[y][x], color)
 
-        return self.calculateWeight(color, remain, countN)
+        return self.__calculateWeight(color, remain, countN)
    
-    def slideDiagonally1(self, x, y, n, color, remain, board):
+    def __slideDiagonally1(self, x, y, n, color, remain, board):
         minX, minY, maxX, maxY = x, y, x, y
 
         i = 0
@@ -160,7 +154,6 @@ class Calculator():
             i += 1
 
         space = 0 
-
         window = []
 
         countN = {
@@ -169,10 +162,10 @@ class Calculator():
 
         slideLength = min(maxX - minX + 1, maxY - minY + 1)
         for i in range(slideLength):
-            self.calculateCount(window, countN, n, board[minY + i][minX + i], color)
-        return self.calculateWeight(color, remain, countN)
+            self.__calculateCount(window, countN, n, board[minY + i][minX + i], color)
+        return self.__calculateWeight(color, remain, countN)
 
-    def slideDiagonally2(self, x, y, n, color, remain, board):
+    def __slideDiagonally2(self, x, y, n, color, remain, board):
         minX, minY, maxX, maxY = x, y, x, y
 
         i = 0
@@ -186,7 +179,6 @@ class Calculator():
             i += 1
 
         space = 0 
-
         window = []
 
         countN = {
@@ -196,11 +188,11 @@ class Calculator():
         slideLength = min(maxX - minX + 1, maxY - minY + 1)
 
         for i in range(slideLength):
-            self.calculateCount(window, countN, n, board[minY + i][maxX - i], color)
+            self.__calculateCount(window, countN, n, board[minY + i][maxX - i], color)
 
-        return self.calculateWeight(color, remain, countN)
+        return self.__calculateWeight(color, remain, countN)
 
-    def calculateCount(self, window, countN, n, value, color):
+    def __calculateCount(self, window, countN, n, value, color):
         opponentColor = 3 - color
 
         currentColor = value
@@ -226,8 +218,4 @@ class Calculator():
         except Exception:
           
             return
-    
-    def __init_window(self):
-        window = []
 
-        return window
