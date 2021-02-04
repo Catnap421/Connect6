@@ -13,9 +13,6 @@ black_path = "./images/black.png"
 white_path = "./images/white.png"
 background_path = './images/baduk_19.png'
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
 class QUserEvent(QEvent):
     def __init__(self, x, y):
         super().__init__(QEvent.User)
@@ -154,9 +151,7 @@ class App(QWidget):
         QApplication.postEvent(self, QUserEvent(boardX, boardY), Qt.LowEventPriority - 1)
         
     def customEvent(self, event):
-        logger.info('custom event!')
         if self.gameStatus.getTurn() == 2:
-            logger.info('adapter is calculate')
             self.adapter.isCalculate = True
 
     def paintEvent(self, event):
@@ -164,12 +159,11 @@ class App(QWidget):
             return
 
         painter = QPainter(self.pixmap)
-        painter.drawImage(self.groundX, self.groundY, self.black if self.gameStatus.getTurn() is 1 else self.white)
+        painter.drawImage(self.groundX, self.groundY, self.black if self.gameStatus.getTurn() is 1 else self.white)        
         self.background.setPixmap(self.pixmap)
         self.modified = False
         self.gameStatus.setTurn()
         self.statusView.setText("TURN : {}".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE"))
-        logger.info("paint event: ", self.gameStatus.getTurn())
 
     def updateStatus(self, boardX, boardY):
         # GameStatus 호출하기
@@ -196,8 +190,10 @@ class App(QWidget):
         self.playList.addItem(text)
         self.status = False
         self.resetButton.setEnabled(True)
-        if self.th : 
+        try:
             self.th.stop()
+        except AttributeError:
+            return
 
     def __reset(self):
         print("resetting..")
@@ -209,7 +205,7 @@ class App(QWidget):
         self.groundX = 0
         self.groundY = 0
         self.gameStatus = GameStatus()
-        self.status = False # False: 시작 불가 True: 시작 가능
+        self.status = None # False: 시작 불가 True: 시작 가능
 
         self.playList.clear()
 

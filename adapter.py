@@ -9,6 +9,7 @@ from coordinateConverter import *
 import random
 import time
 
+
 class Payload():
     def __init__(self, x, y, color):
         self.x = x
@@ -52,7 +53,6 @@ class Adapter(QThread):
         return nextPos[random1]
 
     def turnAi(self):
-        print(self.gameStatus.pointBoard)
         boardX, boardY = self.calculator.run(2)
         self.drawImage.emit(boardX, boardY)
         time.sleep(1)
