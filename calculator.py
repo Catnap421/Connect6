@@ -2,11 +2,15 @@ import copy
 import random
 import pprint
 import logging
+import os
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+if os.path.isfile('my.log'):    
+    os.remove('my.log')
 
 file_handler = logging.FileHandler('my.log')
 file_handler.setFormatter(formatter)
@@ -64,19 +68,17 @@ class Calculator():
             weight = 0
             tempBoard = copy.deepcopy(board)
             tempBoard[y][x] = 3 - color
+            logger.info(f'{x}, {y}')
             weight += self.slideHorizontally(x, y, 6, 3 - color, remain, tempBoard)
             weight += self.slideVertically(x, y, 6, 3 - color, remain, tempBoard)
             weight += self.slideDiagonally1(x, y, 6, 3 - color, remain, tempBoard)
             weight += self.slideDiagonally2(x, y, 6, 3 - color, remain, tempBoard)
-            print(x, y, weight)
+
             tempBoard[y][x] = color
             weight += self.slideHorizontally(x, y, 6, color, remain, tempBoard)
             weight += self.slideVertically(x, y, 6, color, remain, tempBoard)
             weight += self.slideDiagonally1(x, y, 6, color, remain, tempBoard)
             weight += self.slideDiagonally2(x, y, 6, color, remain, tempBoard)
-            print(x, y, weight)
-
-
 
             self.weightBoard[y][x] = weight
 
@@ -84,35 +86,32 @@ class Calculator():
         return 
 
     def calculateWeight(self, color, remain, countN):
+        """
+        1. 내 돌이 6개가 되는 경우(6) : 1000000
+        2. 상대가 6개가 완성 되는 경우(5, 6) : 400000
+        3. 내가 공격을 완성하는 경우(4, 5) : 40000
+        4. 상대가 공격을 완성하는 경우(3, 4) : 10000 / 5000
+        5. 내가 공격 빌드업(2, 3): 300 / 1000
+
+        """
         if color == self.color:
             if remain == 1: 
-                weight = countN['count6'] * 1000000 + countN['count5'] * 100 \
-                    + countN['count4'] * 100 + countN['count3'] * 50 + countN['count2'] * 40 
-            else:
-                weight = countN['count6'] * 10000 + countN['count5'] * 10000 \
-                    + countN['count4'] * 100 + countN['count3'] * 100 + countN['count2'] * 40 
+                weight = countN['count6'] * 1000000 \
+                    + countN['count5'] * 40000 + countN['count4'] * 40000 \
+                        + countN['count3'] * 300 \
+                            + countN['count2'] * 100 
+            else: # 내 첫 차례
+                weight = countN['count6'] * 1000000 + countN['count5'] * 1000000 \
+                    + countN['count4'] * 40000 + countN['count3'] * 40000 \
+                        + countN['count2'] * 300 
         else :
-            weight = countN['count6'] * 100000 + countN['count5'] * 100000 \
-                + countN['count4'] * 1000 + countN['count3'] * 500 + countN['count2'] * 400 
+            weight = countN['count6'] * 400000 + countN['count5'] * 200000 \
+                + countN['count4'] * 10000 \
+                    + countN['count3'] * 5000 \
+                        + countN['count2'] * 400 
 
         return weight
-
-    def calculateMinMax(self, x, y):
-        minX, minY, maxX, maxY = x, y, x, y
-
-        i = 0
-        while minX > 0 and minY > 0 and i <= 5:
-            minX, minY = x - i, y - i
-            i += 1
-
-        i = 0
-        while maxX < 18 and maxY < 18 and i <= 5:
-            maxX, maxY = x + i, y + i
-            i += 1
         
-        return minX, minY, maxX, maxY
-        
-
     def slideHorizontally(self, x, y, n, color, remain, board):
         # n : window size
         minX, maxX = max(0, x - 5), min(18, x + 5)
@@ -148,7 +147,17 @@ class Calculator():
         return self.calculateWeight(color, remain, countN)
    
     def slideDiagonally1(self, x, y, n, color, remain, board):
-        minX, minY, maxX, maxY = self.calculateMinMax(x, y)
+        minX, minY, maxX, maxY = x, y, x, y
+
+        i = 0
+        while minX > 0 and minY > 0 and i <= 5:
+            minX, minY = x - i, y - i
+            i += 1
+
+        i = 0
+        while maxX < 18 and maxY < 18 and i <= 5:
+            maxX, maxY = x + i, y + i
+            i += 1
 
         space = 0 
 
@@ -164,7 +173,17 @@ class Calculator():
         return self.calculateWeight(color, remain, countN)
 
     def slideDiagonally2(self, x, y, n, color, remain, board):
-        minX, minY, maxX, maxY = self.calculateMinMax(x, y)
+        minX, minY, maxX, maxY = x, y, x, y
+
+        i = 0
+        while minX > 0 and maxY < 18 and i <= 5:
+            minX, maxY = x - i, y + i
+            i += 1
+
+        i = 0
+        while maxX < 18 and maxY > 0 and i <= 5:
+            maxX, minY = x + i, y - i
+            i += 1
 
         space = 0 
 
@@ -183,20 +202,22 @@ class Calculator():
 
     def calculateCount(self, window, countN, n, value, color):
         opponentColor = 3 - color
+
+        currentColor = value
+
+        if len(window) == n:
+            window.pop(0)
+        window.append(currentColor)
+
+        if len(window) != n:
+            return
+
+        count = 0
+
         try: 
-            currentColor = value
-
-            if len(window) == n:
-                window.pop(0)
-            window.append(currentColor)
-
-            if len(window) != n:
-                return
-
-            count = 0
-
             for stone in window:
                 logger.info(f'{color}, {stone}, {window}')
+
                 if stone == opponentColor:
                     raise Exception('상대돌 발견')
                 elif stone == color:
