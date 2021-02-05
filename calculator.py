@@ -97,7 +97,7 @@ class Calculator():
         if color == self.color:
             if remain == 1: 
                 weight = countN['count6'] * 1000000 \
-                    + countN['count5'] * 40000 + countN['count4'] * 40000 \
+                    + countN['count5'] * 40000 + countN['count4'] * 50000 \
                         + countN['count3'] * 300 \
                             + countN['count2'] * 100 
             else: # 내 첫 차례
