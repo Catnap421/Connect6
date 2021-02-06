@@ -6,6 +6,7 @@ from PyQt5.QtCore import *
 from calculator import *
 from gameStatus import *
 from coordinateConverter import *
+from socket import *
 import random
 import time
 

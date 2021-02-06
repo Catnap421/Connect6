@@ -12,4 +12,4 @@ if __name__ == "__main__":
     mw = qtmodern.windows.ModernWindow(win)    
     mw.show()
 
-    exit(app.exec_())
+    app.exec_()

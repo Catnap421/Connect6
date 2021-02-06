@@ -246,10 +246,64 @@ class App(QWidget):
 
     def __aiByAiGameStart(self):
         print("ai vs ai")
+        self.oneByOneButton.setEnabled(False)
+        self.oneByAiButton.setEnabled(False)
+        self.aiByAiButton.setEnabled(False)
+        self.resetButton.setEnabled(False)
+        self.status = 'aiByAi'   
+         
+        dlg = ConnectDialog()
+        dlg.exec_()
+        ip = dlg.ip
+        port = dlg.port
+        name = dlg.name
+        print("ip: %s port: %s name: %s" % (ip, port, name))
 
+    def connectServer(self):
+
+
+        print('connect Server')
     """
     To Do
     self.status의 상태를 좀 더 분할하기 - (Ready, PlayOne, PlayAi, Play2Ai)등과 같이
     """
 
-        
+class ConnectDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.setupUI()
+
+        self.ip = None
+        self.port = None
+        self.name = None
+
+    def setupUI(self):
+        self.setGeometry(800, 500, 300, 100)
+        self.setWindowTitle("Connect Server")
+
+        label1 = QLabel("IP: ")
+        label2 = QLabel("Port: ")
+        label3 = QLabel("Name: ")
+
+        self.lineEdit1 = QLineEdit()
+        self.lineEdit2 = QLineEdit()
+        self.lineEdit3 = QLineEdit()
+        self.pushButton1= QPushButton("Connect")
+        self.pushButton1.clicked.connect(self.pushButtonClicked)
+
+        layout = QGridLayout()
+        layout.addWidget(label1, 0, 0)
+        layout.addWidget(self.lineEdit1, 0, 1)
+        layout.addWidget(label2, 1, 0)
+        layout.addWidget(self.lineEdit2, 1, 1)
+        layout.addWidget(label3, 2, 0)
+        layout.addWidget(self.lineEdit3, 2, 1)
+        layout.addWidget(self.pushButton1, 2, 2)
+
+        self.setLayout(layout)
+
+    def pushButtonClicked(self):
+        self.ip = self.lineEdit1.text()
+        self.port = self.lineEdit2.text()
+        self.name = self.lineEdit3.text()
+        self.close()        
