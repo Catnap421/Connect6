@@ -4,17 +4,17 @@ import pprint
 import logging
 import os
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+# logger = logging.getLogger()
+# logger.setLevel(logging.INFO)
 
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-if os.path.isfile('my.log'):    
-    os.remove('my.log')
+# if os.path.isfile('my.log'):    
+#     os.remove('my.log')
 
-file_handler = logging.FileHandler('my.log')
-file_handler.setFormatter(formatter)
-logger.addHandler(file_handler)
+# file_handler = logging.FileHandler('my.log')
+# file_handler.setFormatter(formatter)
+# logger.addHandler(file_handler)
 
 class Calculator():
     def __init__(self, color, gameStatus):
@@ -68,7 +68,7 @@ class Calculator():
             weight = 0
             tempBoard = copy.deepcopy(board)
             tempBoard[y][x] = 3 - color
-            logger.info(f'{x}, {y}')
+            #logger.info(f'{x}, {y}')
             weight += self.__slideHorizontally(x, y, 6, 3 - color, remain, tempBoard)
             weight += self.__slideVertically(x, y, 6, 3 - color, remain, tempBoard)
             weight += self.__slideDiagonally1(x, y, 6, 3 - color, remain, tempBoard)
@@ -105,7 +105,7 @@ class Calculator():
                     + countN['count4'] * 40000 + countN['count3'] * 60000 \
                         + countN['count2'] * 300 
         else :
-            weight = countN['count6'] * 400000 + countN['count5'] * 200000 \
+            weight = countN['count6'] * 300000 + countN['count5'] * 300000 \
                 + countN['count4'] * 10000 \
                     + countN['count3'] * 5000 \
                         + countN['count2'] * 400 
@@ -208,7 +208,7 @@ class Calculator():
 
         try: 
             for stone in window:
-                logger.info(f'{color}, {stone}, {window}')
+                #logger.info(f'{color}, {stone}, {window}')
 
                 if stone == opponentColor:
                     raise Exception('상대돌 발견')

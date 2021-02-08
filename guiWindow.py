@@ -8,6 +8,7 @@ from adapter import *
 import time
 import threading
 import logging
+import socket
 
 black_path = "./images/black.png"
 white_path = "./images/white.png"
@@ -238,7 +239,7 @@ class App(QWidget):
         aiColor = 2
 
         # Setting Thread - self.adapter로 멤버변수로 만드는 게 맞을까?
-        self.adapter = Adapter(aiColor, self.gameStatus, False)
+        self.adapter = Adapter(aiColor, self.gameStatus, False, None)
         self.th = self.adapter
         self.th.drawImage.connect(self.updateStatus)
         self.th.start()
@@ -259,10 +260,14 @@ class App(QWidget):
         name = dlg.name
         print("ip: %s port: %s name: %s" % (ip, port, name))
 
-    def connectServer(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((ip, int(port)))
 
+        self.adapter = Adapter(0, self.gameStatus, False, sock)
+        self.th = self.adapter
+        self.th.drawImage.connect(self.updateStatus)
+        self.th.start()
 
-        print('connect Server')
     """
     To Do
     self.status의 상태를 좀 더 분할하기 - (Ready, PlayOne, PlayAi, Play2Ai)등과 같이
@@ -288,6 +293,10 @@ class ConnectDialog(QDialog):
         self.lineEdit1 = QLineEdit()
         self.lineEdit2 = QLineEdit()
         self.lineEdit3 = QLineEdit()
+
+        self.lineEdit1.setText('192.168.6.129')
+        self.lineEdit2.setText('8089')
+
         self.pushButton1= QPushButton("Connect")
         self.pushButton1.clicked.connect(self.pushButtonClicked)
 

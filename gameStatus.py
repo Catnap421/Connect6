@@ -10,6 +10,10 @@ class GameStatus():
         self.pointBoard = [[0 for col in range(19)] for row in range(19)]
         self.turn = [1, 1] # 1 : black 2: white
         self.count = 0
+        self.start = False
+    
+    def isStart(self):
+        return self.start
 
     def isConnect6(self, color):
         board = self.board
@@ -46,7 +50,7 @@ class GameStatus():
         self.pointBoard[boardY][boardX] = 0
 
         idx = 1
-        if self.count > 16:
+        if self.count > 8:
             idx = 2
             
         for y in range(boardY - idx, boardY + idx + 1):
