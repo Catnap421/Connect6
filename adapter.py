@@ -40,8 +40,10 @@ class Adapter(QThread):
         while True:
             if self.isCalculate is True:
                 self.turnAi()
-            else :
+            elif self.sock != None:
                 self.checkServer()
+                time.sleep(0.5)
+            else:
                 time.sleep(0.5)
     
     def stop(self):
@@ -78,6 +80,16 @@ class Adapter(QThread):
             print('GAME_START')
             err, data = game_start_data_parsing(bodydata)
             print("data.req_res_flag, data.name, data.name_length:", data.req_res_flag, data.name, data.name_length)
+            """
+            if self.calculator.color == 1:
+                self.gameStatus.player1 = self.name
+                self.gameStatus.palyer2 = data.name
+            else:
+                self.gameStatus.player1 = data.name
+                self.gameStatus.palyer2 = self.name   
+
+            print("player1, player2:", self.gameStatus.player1, self.gameStatus.palyer2)              
+            """    
 
         elif header.type == ProtocolType.PUT:   # 사실 PUT은 딱 한번만 입력받음
             print('PUT')

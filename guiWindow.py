@@ -247,7 +247,7 @@ class App(QWidget):
         aiColor = 2
 
         # Setting Thread - self.adapter로 멤버변수로 만드는 게 맞을까?
-        self.adapter = Adapter(aiColor, self.gameStatus, False, None)
+        self.adapter = Adapter(aiColor, self.gameStatus, False, 'player', None)
         self.th = self.adapter
         self.th.drawImage.connect(self.updateStatus)
         self.th.start()

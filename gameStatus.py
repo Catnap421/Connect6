@@ -11,6 +11,8 @@ class GameStatus():
         self.turn = [1, 1] # 1 : black 2: white
         self.count = 0
         self.start = False
+        self.player1 = 'player1'
+        self.palyer2 = 'player2'
     
     def isStart(self):
         return self.start
