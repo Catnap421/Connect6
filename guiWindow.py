@@ -220,7 +220,7 @@ class App(QWidget):
         self.groundX = 0
         self.groundY = 0
         self.gameStatus = GameStatus()
-        self.status = None # False: 시작 불가 True: 시작 가능
+        self.status = None # None: 시작불가
 
         self.playList.clear()
 
@@ -230,6 +230,10 @@ class App(QWidget):
         self.resetButton.setEnabled(False)
 
         self.statusView.setText("READY")
+
+        if self.status != 'oneByOne':
+            if self.adapter.sock is not None :
+                self.adapter.sock.close()
 
     def __oneByOneGameStart(self):
         print('one vs one')
@@ -284,11 +288,6 @@ class App(QWidget):
         self.th = self.adapter
         self.th.drawImage.connect(self.updateStatus)
         self.th.start()
-
-    """
-    To Do
-    self.status의 상태를 좀 더 분할하기 - (Ready, PlayOne, PlayAi, Play2Ai)등과 같이
-    """
 
 class ConnectDialog(QDialog):
     def __init__(self):
