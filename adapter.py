@@ -96,6 +96,7 @@ class Adapter(QThread):
                 self.drawImage.emit(boardX, boardY) 
                 time.sleep(0.5)
 
+            time.sleep(0.3)
             xy = self.turnAi()
 
             coord_num = int(len(xy) / 2)

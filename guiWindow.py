@@ -166,8 +166,6 @@ class App(QWidget):
         self.statusView.setText("TURN : {}".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE"))
 
     def updateStatus(self, boardX, boardY):
-        if self.gameStatus.isStart() == False:
-            return
         # GameStatus 호출하기
         imageX, imageY = self.gameStatus.checkBoard(boardX, boardY, self.gameStatus.getTurn())
         color, result = self.gameStatus.isConnect6(self.gameStatus.getTurn())
@@ -175,7 +173,7 @@ class App(QWidget):
         if imageX is None:
             print('이미 놓았습니다')
             return
-  
+
         text = QListWidgetItem("{0}: ({1}, {2})에 돌을 놓았습니다. ".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE", boardX, boardY))
         self.playList.addItem(text)
         self.groundX, self.groundY = imageX, imageY
@@ -187,6 +185,12 @@ class App(QWidget):
         if not result:
             QApplication.postEvent(self, QUserEvent(boardX, boardY), Qt.LowEventPriority - 1)
             return
+        
+        """
+        if self.gameStatus == 'aiByAi':
+            adapter 에서 게임 결과 데이터를 받고, 그에 맞춰 승리 표시만 해주도록 GuiWindow에서 표현(메서드 분리 필요)
+            return 
+        """
 
         QMessageBox.about(self, "게임 종료", "{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", boardX, boardY))
         text = QListWidgetItem("{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", boardX, boardY))
