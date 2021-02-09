@@ -11,6 +11,7 @@ from connect6_protocol import *
 import struct
 import random
 import time
+import asyncio
 
 
 class Payload():
@@ -23,11 +24,11 @@ class Payload():
 class Adapter(QThread):
     drawImage = pyqtSignal(int, int)
 
-    def __init__(self, color, gameStatus, isCalculate, name, sock):
+    def __init__(self, color, gameStatus, isTurn, name, sock):
         super().__init__()
         self.calculator = Calculator(color, gameStatus)
         self.gameStatus = gameStatus # class
-        self.isCalculate = isCalculate # AI의 차례가 되었음을 알리는 변수
+        self.isTurn = isTurn # AI의 차례가 되었음을 알리는 변수
         self.name = name
         self.sock = sock
         
@@ -38,7 +39,7 @@ class Adapter(QThread):
     """
     def run(self):
         while True:
-            if self.isCalculate is True:
+            if self.isTurn is True:
                 self.turnAi()
             elif self.sock != None:
                 self.checkServer()
@@ -80,57 +81,44 @@ class Adapter(QThread):
             print('GAME_START')
             err, data = game_start_data_parsing(bodydata)
             print("data.req_res_flag, data.name, data.name_length:", data.req_res_flag, data.name, data.name_length)
-            """
+            
             if self.calculator.color == 1:
                 self.gameStatus.player1 = self.name
-                self.gameStatus.palyer2 = data.name
+                self.gameStatus.player2 = data.name
             else:
                 self.gameStatus.player1 = data.name
-                self.gameStatus.palyer2 = self.name   
-
-            print("player1, player2:", self.gameStatus.player1, self.gameStatus.palyer2)              
-            """    
+                self.gameStatus.player2 = self.name   
+            
+            print("player1, player2:", self.gameStatus.player1, self.gameStatus.player2)              
+            
 
         elif header.type == ProtocolType.PUT:   # 사실 PUT은 딱 한번만 입력받음
             print('PUT')
             err, data = put_turn_data_parsing(bodydata)
 
-            for i in range(data.coord_num):
-                boardX, boardY = data.xy[i * 2], data.xy[i * 2 + 1]
-                self.drawImage.emit(boardX, boardY) 
-                time.sleep(0.5)
+            self.drawGui(data)
 
         elif header.type == ProtocolType.TURN: # 그림 그리고 calculate -> 이후 put
             print('TURN')
             err, data = put_turn_data_parsing(bodydata)
-            for i in range(data.coord_num):
-                boardX, boardY = data.xy[i * 2], data.xy[i * 2 + 1]
-                self.drawImage.emit(boardX, boardY) 
-                time.sleep(0.5)
+            self.drawGui(data)
 
-            time.sleep(0.3)
-            xy = self.turnAi()
-
-            coord_num = int(len(xy) / 2)
-
-            putTurnData = PutTurnData(coord_num, xy)
-            err, senddata = make_put_payload(self.calculator.color, putTurnData)
-
-            self.sock.send(senddata)     
         elif header.type == ProtocolType.GAME_OVER:
             print('GAME_OVER')
-
+            err, data = game_over_data_parsing(bodydata)
+            print(f'game_over: {data.result}')
+            
         elif header.type == ProtocolType.ERROR:
             print('GAME_ERROR')
 
         elif header.type == ProtocolType.TIMEOUT:
             print('TIMEOUT')
-            
+
         elif header.type == ProtocolType.GAME_DISCARD:
             print('GAME_DISCARD')
 
-
         return 
+
 
     def randomPick(self):
         nextPos = [[8, 8], [9, 8], [10, 8], [8, 9], [10, 9], [8, 10], [9, 10], [10, 10]]
@@ -138,17 +126,31 @@ class Adapter(QThread):
 
         return nextPos[random1]
 
-    def turnAi(self):
+    def calculateAi(self):
         boardX1, boardY1 = self.calculator.run(2)
         self.drawImage.emit(boardX1, boardY1)
         time.sleep(1)
         boardX2, boardY2 = self.calculator.run(1)
         self.drawImage.emit(boardX2, boardY2)
-        self.isCalculate = False
+        self.isTurn = False
         return [boardX1, boardY1, boardX2, boardY2]
     
-    def sendLocalOne(self, pos1, pos2):
-        print(pos1, pos2)
-        self.drawImage.emit(pos1, pos2)
+    def drawGui(self, data):
+        for i in range(data.coord_num):
+            boardX, boardY = data.xy[i * 2], data.xy[i * 2 + 1]
+            self.drawImage.emit(boardX, boardY) 
+            time.sleep(0.5)
 
+    def turnAi(self):
+        xy = self.calculateAi()
+
+        if self.sock is None:
+            return
+
+        coord_num = int(len(xy) / 2)
+
+        putTurnData = PutTurnData(coord_num, xy)
+        err, senddata = make_put_payload(self.calculator.color, putTurnData)
+
+        self.sock.send(senddata)
     # def sendServer():

@@ -151,8 +151,11 @@ class App(QWidget):
         self.updateStatus(boardX, boardY) # 여기서 차례를 바꿔줌
         
     def customEvent(self, event):
+        if not self.gameStatus.start:
+            return
+
         if self.gameStatus.getTurn() == self.adapter.calculator.color:
-            self.adapter.isCalculate = True
+            self.adapter.isTurn = True
 
     def paintEvent(self, event):
         if not self.modified:
@@ -163,7 +166,8 @@ class App(QWidget):
         self.background.setPixmap(self.pixmap)
         self.modified = False
         self.gameStatus.setTurn()
-        self.statusView.setText("TURN : {}".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE"))
+        self.statusView.setText("TURN : {}".format(f"BLACK - {self.gameStatus.player1}" \
+            if self.gameStatus.getTurn() is 1 else f"WHITE - {self.gameStatus.player2}"))
 
     def updateStatus(self, boardX, boardY):
         # GameStatus 호출하기
@@ -174,16 +178,16 @@ class App(QWidget):
             print('이미 놓았습니다')
             return
 
-        text = QListWidgetItem("{0}: ({1}, {2})에 돌을 놓았습니다. ".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE", boardX, boardY))
+        text = QListWidgetItem("{0}: ({1}, {2})에 돌을 놓았습니다. ".format(f"BLACK - {self.gameStatus.player1}" \
+            if self.gameStatus.getTurn() is 1 else f"WHITE - {self.gameStatus.player2}", boardX, boardY))
         self.playList.addItem(text)
         self.groundX, self.groundY = imageX, imageY
         self.modified = True
         self.update()
-        print("self.adapter.calculator.color:", self.adapter.calculator.color)
     
-        ## Check Result(결과가 나왔는 지)
         if not result:
-            QApplication.postEvent(self, QUserEvent(boardX, boardY), Qt.LowEventPriority - 1)
+            if self.status != 'oneByOne':
+                QApplication.postEvent(self, QUserEvent(boardX, boardY), Qt.LowEventPriority - 1)
             return
         
         """
@@ -191,10 +195,12 @@ class App(QWidget):
             adapter 에서 게임 결과 데이터를 받고, 그에 맞춰 승리 표시만 해주도록 GuiWindow에서 표현(메서드 분리 필요)
             return 
         """
-
-        QMessageBox.about(self, "게임 종료", "{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", boardX, boardY))
-        text = QListWidgetItem("{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", boardX, boardY))
-        self.statusView.setText("WINNER : {0}".format("BLACK" if color is 1 else "WHITE"))
+        QMessageBox.about(self, "게임 종료", "{0}가 승리하였습니다. ".format(f"BLACK - {self.gameStatus.player1}" \
+            if color is 1 else f"WHITE - {self.gameStatus.player2}", boardX, boardY))
+        text = QListWidgetItem("{0}가 승리하였습니다. ".format(f"BLACK - {self.gameStatus.player1}" \
+            if color is 1 else f"WHITE - {self.gameStatus.player2}", boardX, boardY))
+        self.statusView.setText("WINNER : {0}".format(f"BLACK - {self.gameStatus.player1}" \
+            if color is 1 else f"WHITE - {self.gameStatus.player2}"))
         self.playList.addItem(text)
         self.status = False
         self.gameStatus.start = False
@@ -233,7 +239,8 @@ class App(QWidget):
         self.resetButton.setEnabled(False)
         self.status = 'oneByOne'
 
-        self.statusView.setText("TURN : {}".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE"))
+        self.statusView.setText("TURN : {}".format(f"BLACK - {self.gameStatus.player1}" \
+            if self.gameStatus.getTurn() is 1 else f"WHITE - {self.gameStatus.player2}"))
 
     def __oneByAiGameStart(self):
         print("one vs ai")
@@ -242,11 +249,13 @@ class App(QWidget):
         self.aiByAiButton.setEnabled(False)
         self.resetButton.setEnabled(False)
         self.status = 'oneByAi'
+        # one vs ai일 땐 게임 스타트를 여기서 관리
+        self.gameStatus.start = True
 
-        self.statusView.setText("TURN : {}".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE"))
+        self.statusView.setText("TURN : {}".format(f"BLACK - {self.gameStatus.player1}" \
+            if self.gameStatus.getTurn() is 1 else f"WHITE - {self.gameStatus.player2}"))
         aiColor = 2
 
-        # Setting Thread - self.adapter로 멤버변수로 만드는 게 맞을까?
         self.adapter = Adapter(aiColor, self.gameStatus, False, 'player', None)
         self.th = self.adapter
         self.th.drawImage.connect(self.updateStatus)

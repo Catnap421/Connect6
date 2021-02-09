@@ -1,10 +1,6 @@
 from coordinateConverter import *
 
 class GameStatus():
-    # Class constants
-    INF = float("inf")  # infinity
-    NEG_INF = - float("inf")  # -infinity
-
     def __init__(self):
         self.board = [[0 for col in range(19)] for row in range(19)]
         self.pointBoard = [[0 for col in range(19)] for row in range(19)]
@@ -12,7 +8,7 @@ class GameStatus():
         self.count = 0
         self.start = False
         self.player1 = 'player1'
-        self.palyer2 = 'player2'
+        self.player2 = 'player2'
     
     def isStart(self):
         return self.start
