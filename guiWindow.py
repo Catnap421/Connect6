@@ -149,10 +149,9 @@ class App(QWidget):
         boardX, boardY = CoordinateConverter.ConvertImageToBoard(oneX, oneY)
   
         self.updateStatus(boardX, boardY) # 여기서 차례를 바꿔줌
-        QApplication.postEvent(self, QUserEvent(boardX, boardY), Qt.LowEventPriority - 1)
         
     def customEvent(self, event):
-        if self.gameStatus.getTurn() == 2:
+        if self.gameStatus.getTurn() == self.adapter.calculator.color:
             self.adapter.isCalculate = True
 
     def paintEvent(self, event):
@@ -167,6 +166,8 @@ class App(QWidget):
         self.statusView.setText("TURN : {}".format("BLACK" if self.gameStatus.getTurn() is 1 else "WHITE"))
 
     def updateStatus(self, boardX, boardY):
+        if self.gameStatus.isStart() == False:
+            return
         # GameStatus 호출하기
         imageX, imageY = self.gameStatus.checkBoard(boardX, boardY, self.gameStatus.getTurn())
         color, result = self.gameStatus.isConnect6(self.gameStatus.getTurn())
@@ -180,9 +181,11 @@ class App(QWidget):
         self.groundX, self.groundY = imageX, imageY
         self.modified = True
         self.update()
-
+        print("self.adapter.calculator.color:", self.adapter.calculator.color)
+    
         ## Check Result(결과가 나왔는 지)
         if not result:
+            QApplication.postEvent(self, QUserEvent(boardX, boardY), Qt.LowEventPriority - 1)
             return
 
         QMessageBox.about(self, "게임 종료", "{0}가 승리하였습니다. ".format("BLACK" if color is 1 else "WHITE", boardX, boardY))
@@ -190,6 +193,7 @@ class App(QWidget):
         self.statusView.setText("WINNER : {0}".format("BLACK" if color is 1 else "WHITE"))
         self.playList.addItem(text)
         self.status = False
+        self.gameStatus.start = False
         self.resetButton.setEnabled(True)
         try:
             self.th.stop()
@@ -263,7 +267,7 @@ class App(QWidget):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.connect((ip, int(port)))
 
-        self.adapter = Adapter(0, self.gameStatus, False, sock)
+        self.adapter = Adapter(0, self.gameStatus, False, name, sock)
         self.th = self.adapter
         self.th.drawImage.connect(self.updateStatus)
         self.th.start()

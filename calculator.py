@@ -96,16 +96,16 @@ class Calculator():
         """
         if color == self.color:
             if remain == 1: 
-                weight = countN['count6'] * 1000000 \
+                weight = countN['count6'] * 5000000 \
                     + countN['count5'] * 40000 + countN['count4'] * 60000 \
                         + countN['count3'] * 300 \
                             + countN['count2'] * 100 
             else: # 내 첫 차례
-                weight = countN['count6'] * 1000000 + countN['count5'] * 1000000 \
+                weight = countN['count6'] * 5000000 + countN['count5'] * 5000000 \
                     + countN['count4'] * 40000 + countN['count3'] * 60000 \
                         + countN['count2'] * 300 
         else :
-            weight = countN['count6'] * 300000 + countN['count5'] * 300000 \
+            weight = countN['count6'] * 500000 + countN['count5'] * 500000 \
                 + countN['count4'] * 10000 \
                     + countN['count3'] * 5000 \
                         + countN['count2'] * 400 

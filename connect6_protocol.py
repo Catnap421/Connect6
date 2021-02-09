@@ -47,9 +47,9 @@ class GameResultType(IntEnum):
 
 class Connect6ProtocolHdr:
     def __init__(self, version: int = Connect6ProtocolSettings.PROTOCOL_VER.value,
-                 _type: int = 0, player_num: int = 0, data_length: int = 0):
+                 type: int = 0, player_num: int = 0, data_length: int = 0):
         self.version = version
-        self._type = _type
+        self.type = type
         self.player_num = player_num
         self.data_length = data_length
 

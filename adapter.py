@@ -23,11 +23,12 @@ class Payload():
 class Adapter(QThread):
     drawImage = pyqtSignal(int, int)
 
-    def __init__(self, color, gameStatus, isCalculate, sock):
+    def __init__(self, color, gameStatus, isCalculate, name, sock):
         super().__init__()
         self.calculator = Calculator(color, gameStatus)
         self.gameStatus = gameStatus # class
         self.isCalculate = isCalculate # AI의 차례가 되었음을 알리는 변수
+        self.name = name
         self.sock = sock
         
 
@@ -47,7 +48,7 @@ class Adapter(QThread):
         self.terminate()
 
     def startGame(self):
-        gameStartData = GameStartData(0, 3, 'jhw')
+        gameStartData = GameStartData(0, len(self.name), self.name)
         err, data = make_game_start_payload(0, gameStartData)
         if 0 != err:
             print(err.name)
@@ -65,30 +66,54 @@ class Adapter(QThread):
 
         recvdata = self.sock.recv(1024)
         print("recvdata:",repr(recvdata))
+        headerdata = recvdata[:4]
+        bodydata = recvdata[4:]
+        err, header = hdr_parsing(headerdata)
+        print(header.version, header.type, header.player_num, header.data_length)
 
-        err, header = hdr_parsing(recvdata)
-        print(header.version, header._type, header.player_num, header.data_length)
-        if header._type == ProtocolType.GAME_START:
+
+        if header.type == ProtocolType.GAME_START:
+            self.calculator.color = header.player_num
+            print("Calculator.color:", self.calculator.color)
             print('GAME_START')
+            err, data = game_start_data_parsing(bodydata)
+            print("data.req_res_flag, data.name, data.name_length:", data.req_res_flag, data.name, data.name_length)
 
-        elif header._type == ProtocolType.PUT:   
+        elif header.type == ProtocolType.PUT:   # 사실 PUT은 딱 한번만 입력받음
             print('PUT')
-            err, data = put_turn_data_parsing(recvdata)
-            print(data.coord_num, data.xy)
-        elif header._type == ProtocolType.TURN:
+            err, data = put_turn_data_parsing(bodydata)
+
+            for i in range(data.coord_num):
+                boardX, boardY = data.xy[i * 2], data.xy[i * 2 + 1]
+                self.drawImage.emit(boardX, boardY) 
+                time.sleep(0.5)
+
+        elif header.type == ProtocolType.TURN: # 그림 그리고 calculate -> 이후 put
             print('TURN')
-            err, data = put_turn_data_parsing(recvdata)
-            print(data.coord_num, data.xy)        
-        elif header._type == ProtocolType.GAME_OVER:
+            err, data = put_turn_data_parsing(bodydata)
+            for i in range(data.coord_num):
+                boardX, boardY = data.xy[i * 2], data.xy[i * 2 + 1]
+                self.drawImage.emit(boardX, boardY) 
+                time.sleep(0.5)
+
+            xy = self.turnAi()
+
+            coord_num = int(len(xy) / 2)
+
+            putTurnData = PutTurnData(coord_num, xy)
+            err, senddata = make_put_payload(self.calculator.color, putTurnData)
+
+            self.sock.send(senddata)     
+        elif header.type == ProtocolType.GAME_OVER:
             print('GAME_OVER')
 
-        elif header._type == ProtocolType.ERROR:
+        elif header.type == ProtocolType.ERROR:
             print('GAME_ERROR')
 
-        elif header._type == ProtocolType.TIMEOUT:
+        elif header.type == ProtocolType.TIMEOUT:
             print('TIMEOUT')
-
-        elif header._type == ProtocolType.GAME_DISCARD:
+            
+        elif header.type == ProtocolType.GAME_DISCARD:
             print('GAME_DISCARD')
 
 
@@ -101,13 +126,13 @@ class Adapter(QThread):
         return nextPos[random1]
 
     def turnAi(self):
-        boardX, boardY = self.calculator.run(2)
-        self.drawImage.emit(boardX, boardY)
+        boardX1, boardY1 = self.calculator.run(2)
+        self.drawImage.emit(boardX1, boardY1)
         time.sleep(1)
-        boardX, boardY = self.calculator.run(1)
-        self.drawImage.emit(boardX, boardY)
-        print('turnAi')
+        boardX2, boardY2 = self.calculator.run(1)
+        self.drawImage.emit(boardX2, boardY2)
         self.isCalculate = False
+        return [boardX1, boardY1, boardX2, boardY2]
     
     def sendLocalOne(self, pos1, pos2):
         print(pos1, pos2)
