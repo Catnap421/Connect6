@@ -18,17 +18,17 @@ class GameStatus():
         for y in range(19):
             for x in range(19):
                 try:
-                    if board[y][x] is color and board[y + 1][x] is color and board[y + 2][x] is color \
-                        and board[y + 3][x] is color and board[y + 4][x] is color and board[y + 5][x] is color:
+                    if board[y][x] == color and board[y + 1][x] == color and board[y + 2][x] == color \
+                        and board[y + 3][x] == color and board[y + 4][x] == color and board[y + 5][x] == color:
                         return (color, True)
-                    if board[y][x] is color and board[y][x + 1] is color and board[y][x + 2] is color \
-                        and board[y][x + 3] is color and board[y][x + 4] is color and board[y][x + 5] is color:
+                    if board[y][x] == color and board[y][x + 1] == color and board[y][x + 2] == color \
+                        and board[y][x + 3] == color and board[y][x + 4] == color and board[y][x + 5] == color:
                         return (color, True)
-                    if board[y][x] is color and board[y + 1][x + 1] is color and board[y + 2][x + 2] is color \
-                        and board[y + 3][x + 3] is color and board[y + 4][x + 4] is color and board[y + 5][x + 5] is color:
+                    if board[y][x] == color and board[y + 1][x + 1] == color and board[y + 2][x + 2] == color \
+                        and board[y + 3][x + 3] == color and board[y + 4][x + 4] == color and board[y + 5][x + 5] == color:
                         return (color, True)
-                    if board[y][18 - x] is color and board[y + 1][18 - (x + 1)] is color and board[y + 2][18 - (x + 2)] is color \
-                        and board[y + 3][18 - (x + 3)] is color and board[y + 4][18 - (x + 4)] is color and board[y + 5][18 - (x + 5)] is color:    
+                    if board[y][18 - x] == color and board[y + 1][18 - (x + 1)] == color and board[y + 2][18 - (x + 2)] == color \
+                        and board[y + 3][18 - (x + 3)] == color and board[y + 4][18 - (x + 4)] == color and board[y + 5][18 - (x + 5)] == color:    
                         return (color, True)
                 except IndexError:
                     continue

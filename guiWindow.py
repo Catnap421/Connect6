@@ -113,7 +113,7 @@ class App(QWidget):
         self.setLayout(hbox)
 
     def mouseDoubleClickEvent(self, event):
-        if self.status is None:
+        if self.status == None:
             QMessageBox.warning(self, "게임 입장 오류", "게임 모드를 선택해주세요")
             return
 
@@ -162,24 +162,24 @@ class App(QWidget):
             return
 
         painter = QPainter(self.pixmap)
-        painter.drawImage(self.groundX, self.groundY, self.black if self.gameStatus.getTurn() is 1 else self.white)        
+        painter.drawImage(self.groundX, self.groundY, self.black if self.gameStatus.getTurn() == 1 else self.white)        
         self.background.setPixmap(self.pixmap)
         self.modified = False
         self.gameStatus.setTurn()
         self.statusView.setText("TURN : {}".format(f"BLACK - {self.gameStatus.player1}" \
-            if self.gameStatus.getTurn() is 1 else f"WHITE - {self.gameStatus.player2}"))
+            if self.gameStatus.getTurn() == 1 else f"WHITE - {self.gameStatus.player2}"))
 
     def updateStatus(self, boardX, boardY):
         # GameStatus 호출하기
         imageX, imageY = self.gameStatus.checkBoard(boardX, boardY, self.gameStatus.getTurn())
         color, result = self.gameStatus.isConnect6(self.gameStatus.getTurn())
 
-        if imageX is None:
+        if imageX == None:
             print('이미 놓았습니다')
             return
 
         text = QListWidgetItem("{0}: ({1}, {2})에 돌을 놓았습니다. ".format(f"BLACK - {self.gameStatus.player1}" \
-            if self.gameStatus.getTurn() is 1 else f"WHITE - {self.gameStatus.player2}", boardX, boardY))
+            if self.gameStatus.getTurn() == 1 else f"WHITE - {self.gameStatus.player2}", boardX, boardY))
         self.playList.addItem(text)
         self.groundX, self.groundY = imageX, imageY
         self.modified = True
@@ -196,11 +196,11 @@ class App(QWidget):
             return 
         """
         QMessageBox.about(self, "게임 종료", "{0}가 승리하였습니다. ".format(f"BLACK - {self.gameStatus.player1}" \
-            if color is 1 else f"WHITE - {self.gameStatus.player2}", boardX, boardY))
+            if color == 1 else f"WHITE - {self.gameStatus.player2}", boardX, boardY))
         text = QListWidgetItem("{0}가 승리하였습니다. ".format(f"BLACK - {self.gameStatus.player1}" \
-            if color is 1 else f"WHITE - {self.gameStatus.player2}", boardX, boardY))
+            if color == 1 else f"WHITE - {self.gameStatus.player2}", boardX, boardY))
         self.statusView.setText("WINNER : {0}".format(f"BLACK - {self.gameStatus.player1}" \
-            if color is 1 else f"WHITE - {self.gameStatus.player2}"))
+            if color == 1 else f"WHITE - {self.gameStatus.player2}"))
         self.playList.addItem(text)
         self.status = False
         self.gameStatus.start = False
@@ -231,9 +231,11 @@ class App(QWidget):
 
         self.statusView.setText("READY")
 
-        if self.status != 'oneByOne':
-            if self.adapter.sock is not None :
+        try:
+            if self.adapter.sock != None :
                 self.adapter.sock.close()
+        except AttributeError:
+            return
 
     def __oneByOneGameStart(self):
         print('one vs one')
@@ -244,7 +246,7 @@ class App(QWidget):
         self.status = 'oneByOne'
 
         self.statusView.setText("TURN : {}".format(f"BLACK - {self.gameStatus.player1}" \
-            if self.gameStatus.getTurn() is 1 else f"WHITE - {self.gameStatus.player2}"))
+            if self.gameStatus.getTurn() == 1 else f"WHITE - {self.gameStatus.player2}"))
 
     def __oneByAiGameStart(self):
         print("one vs ai")
@@ -257,7 +259,7 @@ class App(QWidget):
         self.gameStatus.start = True
 
         self.statusView.setText("TURN : {}".format(f"BLACK - {self.gameStatus.player1}" \
-            if self.gameStatus.getTurn() is 1 else f"WHITE - {self.gameStatus.player2}"))
+            if self.gameStatus.getTurn() == 1 else f"WHITE - {self.gameStatus.player2}"))
         aiColor = 2
 
         self.adapter = Adapter(aiColor, self.gameStatus, False, 'player', None)
@@ -280,9 +282,13 @@ class App(QWidget):
         port = dlg.port
         name = dlg.name
         print("ip: %s port: %s name: %s" % (ip, port, name))
-
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.connect((ip, int(port)))
+        try:
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.connect((ip, int(port)))
+        except TimeoutError:
+            QMessageBox.warning(self, "Timeout Error", "서버 연결에 실패하였습니다.")
+            self.__reset()
+            return
 
         self.adapter = Adapter(0, self.gameStatus, False, name, sock)
         self.th = self.adapter

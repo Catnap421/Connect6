@@ -84,12 +84,12 @@ class Calculator():
             if remain == 1: 
                 weight = countN['count6'] * 5000000 \
                     + countN['count5'] * 40000 + countN['count4'] * 60000 \
-                        + countN['count3'] * 300 \
-                            + countN['count2'] * 100 
+                        + countN['count3'] * 500 \
+                            + countN['count2'] * 1000 
             else: # 내 첫 차례
                 weight = countN['count6'] * 5000000 + countN['count5'] * 5000000 \
                     + countN['count4'] * 40000 + countN['count3'] * 60000 \
-                        + countN['count2'] * 300 
+                        + countN['count2'] * 3000 
         else :
             weight = countN['count6'] * 500000 + countN['count5'] * 500000 \
                 + countN['count4'] * 10000 \

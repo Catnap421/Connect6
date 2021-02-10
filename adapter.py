@@ -144,7 +144,7 @@ class Adapter(QThread):
     def turnAi(self):
         xy = self.calculateAi()
 
-        if self.sock is None:
+        if self.sock == None:
             return
 
         coord_num = int(len(xy) / 2)
