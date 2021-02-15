@@ -1,4 +1,3 @@
-# gameStatus에서 Turn의 변화가 생기면(두 개의 돌을 놓으면) 서버로 데이터 전송하기
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -13,14 +12,6 @@ import random
 import time
 import asyncio
 
-
-class Payload():
-    def __init__(self, x, y, color):
-        self.x = x
-        self.y = y
-        self.color = color
-
-
 class Adapter(QThread):
     drawImage = pyqtSignal(int, int)
     startTimer = pyqtSignal()
@@ -32,12 +23,7 @@ class Adapter(QThread):
         self.isTurn = isTurn # AI의 차례가 되었음을 알리는 변수
         self.name = name
         self.sock = sock
-        
 
-    """
-    adpater가 지속적으로 돌아가고 adapter에서 서버로부터 입력을 받게되면, 
-    GUI에 노출하고, GUI에서 다시 adapter로 계산을 진행하게 해서, GUI로 노출하고 동시에 서버로 전달
-    """
     def run(self):
         while True:
             if self.isTurn is True:
@@ -93,13 +79,13 @@ class Adapter(QThread):
             print("player1, player2:", self.gameStatus.player1, self.gameStatus.player2)   
             self.startTimer.emit()   
 
-        elif header.type == ProtocolType.PUT:   # 사실 PUT은 딱 한번만 입력받음
+        elif header.type == ProtocolType.PUT:  
             print('PUT')
             err, data = put_turn_data_parsing(bodydata)
 
             self.drawGui(data)
 
-        elif header.type == ProtocolType.TURN: # 그림 그리고 calculate -> 이후 put
+        elif header.type == ProtocolType.TURN: 
             print('TURN')
             err, data = put_turn_data_parsing(bodydata)
             self.drawGui(data)
@@ -154,4 +140,4 @@ class Adapter(QThread):
         err, senddata = make_put_payload(self.calculator.color, putTurnData)
 
         self.sock.send(senddata)
-    # def sendServer():
+
