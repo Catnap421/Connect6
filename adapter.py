@@ -23,6 +23,7 @@ class Payload():
 
 class Adapter(QThread):
     drawImage = pyqtSignal(int, int)
+    startTimer = pyqtSignal()
 
     def __init__(self, color, gameStatus, isTurn, name, sock):
         super().__init__()
@@ -89,8 +90,8 @@ class Adapter(QThread):
                 self.gameStatus.player1 = data.name
                 self.gameStatus.player2 = self.name   
             
-            print("player1, player2:", self.gameStatus.player1, self.gameStatus.player2)              
-            
+            print("player1, player2:", self.gameStatus.player1, self.gameStatus.player2)   
+            self.startTimer.emit()   
 
         elif header.type == ProtocolType.PUT:   # 사실 PUT은 딱 한번만 입력받음
             print('PUT')
@@ -139,7 +140,7 @@ class Adapter(QThread):
         for i in range(data.coord_num):
             boardX, boardY = data.xy[i * 2], data.xy[i * 2 + 1]
             self.drawImage.emit(boardX, boardY) 
-            time.sleep(0.5)
+            time.sleep(0.7)
 
     def turnAi(self):
         xy = self.calculateAi()

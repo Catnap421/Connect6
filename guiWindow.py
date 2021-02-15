@@ -5,6 +5,7 @@ from coordinateConverter import *
 from gameStatus import *
 from color import *
 from adapter import *
+from timer import *
 import time
 import threading
 import logging
@@ -67,7 +68,7 @@ class App(QWidget):
 
         # Set Timer Display
         self.lcd = QLCDNumber()
-        self.lcd.display('15')
+        self.lcd.display("0")
         self.lcd.setDigitCount(8)
 
         # Set PlayList View
@@ -111,6 +112,10 @@ class App(QWidget):
         hbox.addStretch(1)
 
         self.setLayout(hbox)
+
+    def updateTime(self, time):
+        print('update Time')
+        self.lcd.display(str(time))
 
     def mouseDoubleClickEvent(self, event):
         if self.status == None:
@@ -165,9 +170,20 @@ class App(QWidget):
         painter.drawImage(self.groundX, self.groundY, self.black if self.gameStatus.getTurn() == 1 else self.white)        
         self.background.setPixmap(self.pixmap)
         self.modified = False
+
+        currentTurn = self.gameStatus.getTurn()
+
         self.gameStatus.setTurn()
         self.statusView.setText("TURN : {}".format(f"BLACK - {self.gameStatus.player1}" \
             if self.gameStatus.getTurn() == 1 else f"WHITE - {self.gameStatus.player2}"))
+
+        nextTurn = self.gameStatus.getTurn()
+
+        # if self.status == "oneByOne":
+        #     return 
+
+        if currentTurn != nextTurn:
+            self.thTimer.setTime(16)
 
     def updateStatus(self, boardX, boardY):
         # GameStatus 호출하기
@@ -178,7 +194,7 @@ class App(QWidget):
             print('이미 놓았습니다')
             return
 
-        text = QListWidgetItem("{0}: ({1}, {2})에 돌을 놓았습니다. ".format(f"BLACK - {self.gameStatus.player1}" \
+        text = QListWidgetItem("{0}: ({1}, {2})".format(f"BLACK - {self.gameStatus.player1}" \
             if self.gameStatus.getTurn() == 1 else f"WHITE - {self.gameStatus.player2}", boardX, boardY))
         self.playList.addItem(text)
         self.groundX, self.groundY = imageX, imageY
@@ -189,12 +205,7 @@ class App(QWidget):
             if self.status != 'oneByOne':
                 QApplication.postEvent(self, QUserEvent(boardX, boardY), Qt.LowEventPriority - 1)
             return
-        
-        """
-        if self.gameStatus == 'aiByAi':
-            adapter 에서 게임 결과 데이터를 받고, 그에 맞춰 승리 표시만 해주도록 GuiWindow에서 표현(메서드 분리 필요)
-            return 
-        """
+
         QMessageBox.about(self, "게임 종료", "{0}가 승리하였습니다. ".format(f"BLACK - {self.gameStatus.player1}" \
             if color == 1 else f"WHITE - {self.gameStatus.player2}", boardX, boardY))
         text = QListWidgetItem("{0}가 승리하였습니다. ".format(f"BLACK - {self.gameStatus.player1}" \
@@ -248,6 +259,11 @@ class App(QWidget):
         self.statusView.setText("TURN : {}".format(f"BLACK - {self.gameStatus.player1}" \
             if self.gameStatus.getTurn() == 1 else f"WHITE - {self.gameStatus.player2}"))
 
+        self.timer = Timer(self.gameStatus)
+        self.thTimer = self.timer
+        self.thTimer.drawTime.connect(self.updateTime)
+        self.thTimer.start()
+
     def __oneByAiGameStart(self):
         print("one vs ai")
         self.oneByOneButton.setEnabled(False)
@@ -266,6 +282,11 @@ class App(QWidget):
         self.th = self.adapter
         self.th.drawImage.connect(self.updateStatus)
         self.th.start()
+
+        self.timer = Timer(self.gameStatus)
+        self.thTimer = self.timer
+        self.thTimer.drawTime.connect(self.updateTime)
+        self.thTimer.start()
 
 
     def __aiByAiGameStart(self):
@@ -294,6 +315,14 @@ class App(QWidget):
         self.th = self.adapter
         self.th.drawImage.connect(self.updateStatus)
         self.th.start()
+
+        self.timer = Timer(self.gameStatus)
+        self.thTimer = self.timer
+        self.thTimer.drawTime.connect(self.updateTime)
+        self.th.startTimer.connect(self.startTimer)
+        
+    def startTimer(self):
+        self.thTimer.start()
 
 class ConnectDialog(QDialog):
     def __init__(self):
