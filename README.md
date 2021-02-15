@@ -8,9 +8,17 @@
 4. (venv 환경에서) pip install -r requirements.txt 
 5. python main.py
 
+### 빌드하기 (exe 파일 만들기)
+
+1. (venv 실행) >> ./venv/scripts/activate.ps1
+2. python setup.py build
+3. build 디렉토리를 따라가면 exe파일 존재
+
 ### 주의사항
 
-윈도우에서만 동작하며, 빌드한 파일의 파일의 경우, 경로 상에 한글이 존재하지 않아야 실행 가능
+소스코드는 윈도우에서만 동작한다.
+
+빌드한 파일의 파일의 경우, 경로 상에 한글이 존재하지 않아야 실행이 가능하다.
 
 ### Notion
 
