@@ -11,8 +11,9 @@
 ### 빌드하기 (exe 파일 만들기)
 
 1. (venv 실행) >> ./venv/scripts/activate.ps1
-2. python setup.py build
-3. build 디렉토리를 따라가면 exe파일 존재
+2. pip install cx_freeze
+3. python setup.py build
+4. build 디렉토리를 따라가면 exe파일 존재
 
 ### 주의사항
 

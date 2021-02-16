@@ -9,7 +9,7 @@ class Timer(QThread):
 
     def __init__(self, gameStatus):
         super().__init__()
-        self.time = 16
+        self.time = 31
         self.gameStatus = gameStatus
 
     def run(self):

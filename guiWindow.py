@@ -183,7 +183,7 @@ class App(QWidget):
         #     return 
 
         if currentTurn != nextTurn:
-            self.thTimer.setTime(16)
+            self.thTimer.setTime(31)
 
     def updateStatus(self, boardX, boardY):
         # GameStatus 호출하기
@@ -345,8 +345,9 @@ class ConnectDialog(QDialog):
         self.lineEdit2 = QLineEdit()
         self.lineEdit3 = QLineEdit()
 
-        self.lineEdit1.setText('192.168.6.129')
-        self.lineEdit2.setText('8089')
+        self.lineEdit1.setText('IP')
+        self.lineEdit2.setText('Port')
+        self.lineEdit3.setText('Name')
 
         self.pushButton1= QPushButton("Connect")
         self.pushButton1.clicked.connect(self.pushButtonClicked)
